@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Organizador de Suscripciones - FreelanceFinanceHub</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      text-align: center;
+      backdrop-filter: var(--blur-glass);
+    }
+    .metric-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-top: 0.25rem;
+    }
+    .filters-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .data-table th {
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      max-width: 550px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @media (max-width: 950px) {
+      .filters-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 600px) {
+      .filters-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 1200px;">
+    <nav class="nav">
+      <div style="font-weight: 700; font-size: 1.25rem; color: var(--color-primary);">FreelanceFinanceHub</div>
+      <div class="nav-links">
+        <a href="/dashboard" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Panel Principal</a>
+        <a href="/calculator" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Calculadora</a>
+        <a href="/subscriptions" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Suscripciones</a>
+        <button id="logoutBtn" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="badge">Módulo 2</span>
+        <h1 style="margin-top: 0.5rem;">Organizador de Suscripciones y Free Trials</h1>
+        <p style="color: var(--text-muted);">
+          Controla tus costos recurrentes, fechas de cobro y evita cargos involuntarios al terminar tus periodos de prueba.
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="openAlertsModalBtn" class="btn btn-secondary" style="width: auto;">🔔 Configurar Alertas</button>
+        <button id="openCreateModalBtn" class="btn btn-primary" style="width: auto;">+ Nueva Suscripción</button>
+      </div>
+    </div>
+
+    <!-- AVISO DE TRIALS POR VENCER -->
+    <div id="trialsAlertNotice" style="display: none; margin-bottom: 1.5rem; padding: 1rem 1.25rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4);">
+      <strong style="color: #fcd34d;">⚠️ Atención: Periodos de prueba próximos a vencer</strong>
+      <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 0.25rem;">
+        Tienes <strong id="expiringTrialsCount" style="color: #ffffff;">0</strong> suscripción(es) en periodo de prueba que terminarán en los próximos 7 días. Cancélalas a tiempo si no deseas continuar con el cobro automático.
+      </p>
+    </div>
+
+    <!-- TARJETAS DE MÉTRICAS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Gasto Mensual Proyectado</span>
+        <div id="metricMonthly" class="metric-val">$0.00</div>
+      </div>
+      <div class="metric-card">
+        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Gasto Anual Proyectado</span>
+        <div id="metricAnnual" class="metric-val" style="color: var(--color-success);">$0.00</div>
+      </div>
+      <div class="metric-card">
+        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Suscripciones Activas</span>
+        <div id="metricActive" class="metric-val" style="color: var(--text-main);">0</div>
+      </div>
+      <div class="metric-card">
+        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Periodos de Prueba (Trials)</span>
+        <div id="metricTrials" class="metric-val" style="color: var(--color-warning);">0</div>
+      </div>
+    </div>
+
+    <!-- BARRA DE BÚSQUEDA Y FILTROS COMBINABLES -->
+    <div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+      <div class="filters-bar">
+        <div>
+          <input type="text" id="searchInput" class="form-input" placeholder="🔍 Buscar por nombre, notas, método...">
+        </div>
+        <div>
+          <select id="filterStatus" class="form-input">
+            <option value="">Todos los Estados</option>
+            <option value="active">Activas</option>
+            <option value="trial">En Prueba (Trial)</option>
+            <option value="paused">Pausadas</option>
+            <option value="cancelled">Canceladas</option>
+          </select>
+        </div>
+        <div>
+          <select id="filterCategory" class="form-input">
+            <option value="">Todas las Categorías</option>
+          </select>
+        </div>
+        <div>
+          <select id="sortBySelect" class="form-input">
+            <option value="renewal_date">Ordenar: Renovación</option>
+            <option value="cost">Ordenar: Costo</option>
+            <option value="service_name">Ordenar: Nombre</option>
+            <option value="trial_end_date">Ordenar: Fin de Trial</option>
+          </select>
+        </div>
+        <div>
+          <select id="sortOrderSelect" class="form-input">
+            <option value="ASC">Ascendente (↑)</option>
+            <option value="DESC">Descendente (↓)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLA DE SUSCRIPCIONES -->
+      <div style="overflow-x: auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Servicio</th>
+              <th>Costo</th>
+              <th>Categoría</th>
+              <th>Estado</th>
+              <th>Próxima Renovación</th>
+              <th>Fin de Prueba</th>
+              <th style="text-align: right;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="subscriptionsTableBody">
+            <!-- Filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CREACIÓN / EDICIÓN -->
+  <div id="subscriptionModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 id="modalTitle" style="font-size: 1.25rem;">Nueva Suscripción</h2>
+        <button id="closeModalBtn" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+
+      <div id="modalAlert" class="alert"></div>
+
+      <form id="subscriptionForm">
+        <div class="form-group">
+          <label for="subServiceName">Nombre del Servicio *</label>
+          <input type="text" id="subServiceName" class="form-input" placeholder="ej. GitHub Copilot, Adobe CC, Netflix" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="subCost">Costo *</label>
+            <input type="number" id="subCost" class="form-input" step="0.01" min="0" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label for="subCurrency">Moneda</label>
+            <input type="text" id="subCurrency" class="form-input" value="USD">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="subBillingCycle">Ciclo de Facturación *</label>
+            <select id="subBillingCycle" class="form-input" required>
+              <option value="monthly">Mensual</option>
+              <option value="quarterly">Trimestral</option>
+              <option value="annual">Anual</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subCategoryId">Categoría</label>
+            <select id="subCategoryId" class="form-input">
+              <option value="">Sin Categoría</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="subStartDate">Fecha de Inicio *</label>
+            <input type="date" id="subStartDate" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label for="subRenewalDate">Próxima Renovación *</label>
+            <input type="date" id="subRenewalDate" class="form-input" required>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 0.5rem; background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-md);">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0;">
+            <input type="checkbox" id="subIsTrial" style="width: 1.1rem; height: 1.1rem; accent-color: var(--color-primary);">
+            <span>¿Es un periodo de prueba gratuito (Free Trial)?</span>
+          </label>
+        </div>
+
+        <div id="trialDateGroup" class="form-group" style="display: none;">
+          <label for="subTrialEndDate" style="color: var(--color-warning);">Fecha de Fin de Prueba (Free Trial) *</label>
+          <input type="date" id="subTrialEndDate" class="form-input">
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Se te alertará antes de esta fecha para evitar cobros.</small>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label for="subStatus">Estado</label>
+            <select id="subStatus" class="form-input">
+              <option value="active">Activa</option>
+              <option value="trial">En Prueba</option>
+              <option value="paused">Pausada</option>
+              <option value="cancelled">Cancelada</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="subPaymentMethod">Método de Pago</label>
+            <input type="text" id="subPaymentMethod" class="form-input" placeholder="ej. Tarjeta Débito, PayPal">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="subNotes">Notas</label>
+          <textarea id="subNotes" class="form-input" rows="2" placeholder="Detalles de la cuenta, recordatorios o enlaces..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" id="cancelModalBtn" class="btn btn-secondary" style="width: auto;">Cancelar</button>
+          <button type="submit" id="saveSubBtn" class="btn btn-primary" style="width: auto;">Guardar Suscripción</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURACIÓN DE ALERTAS -->
+  <div id="alertsModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem;">Configuración de Alertas por Correo</h2>
+        <button id="closeAlertsModalBtn" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+
+      <div id="alertsModalNotice" class="alert"></div>
+
+      <form id="alertsSettingsForm">
+        <div class="form-group">
+          <label for="trialAlertDays">Días de anticipación para avisos de Fin de Free Trial</label>
+          <input type="number" id="trialAlertDays" class="form-input" min="1" max="30" required>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Recibirás un correo preventivo N días antes de que termine el periodo de prueba.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="renewalAlertDays">Días de anticipación para avisos de Renovación</label>
+          <input type="number" id="renewalAlertDays" class="form-input" min="1" max="30" required>
+          <small style="color: var(--text-muted); font-size: 0.75rem;">Recibirás un aviso antes del cobro recurrente.</small>
+        </div>
+
+        <div class="form-group" style="background: var(--bg-input); padding: 0.75rem 1rem; border-radius: var(--radius-md);">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 0;">
+            <input type="checkbox" id="emailEnabledCheck" style="width: 1.1rem; height: 1.1rem; accent-color: var(--color-primary);">
+            <span>Habilitar notificaciones por correo electrónico</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
+          <button type="button" id="triggerCheckNowBtn" class="btn btn-secondary" style="width: auto; font-size: 0.85rem;">⚡ Probar Verificación Ahora</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" id="cancelAlertsModalBtn" class="btn btn-secondary" style="width: auto;">Cerrar</button>
+            <button type="submit" class="btn btn-primary" style="width: auto;">Guardar Cambios</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/api/apiClient.js"></script>
+  <script src="/assets/js/api/subscriptionApi.js"></script>
+  <script src="/assets/js/api/alertsApi.js"></script>
+  <script src="/assets/js/utils/routeGuard.js"></script>
+  <script src="/assets/js/modules/subscriptionView.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth({ requireAuth: true, redirectTo: '/login' });
+      if (!user) return;
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+          await authApi.logout();
+        } finally {
+          window.location.href = '/login';
+        }
+      });
+
+      setupSubscriptionEvents();
+      await loadCategories();
+      await loadMetrics();
+      await loadSubscriptions();
+    });
+  </script>
+</body>
+</html>

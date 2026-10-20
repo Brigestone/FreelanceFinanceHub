@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Principal - FreelanceFinanceHub</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div style="font-weight: 700; font-size: 1.25rem; color: var(--color-primary);">FreelanceFinanceHub</div>
+      <div class="nav-links">
+        <span id="userRoleBadge" class="badge">freelancer</span>
+        <button id="logoutBtn" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+          Cerrar Sesión
+        </button>
+      </div>
+    </nav>
+
+    <div class="card">
+      <h2>¡Bienvenido, <span id="userName" style="color: var(--color-primary);">...</span>!</h2>
+      <p style="color: var(--text-muted); margin-top: 0.5rem;">
+        Has iniciado sesión correctamente. Tu correo registrado es <strong id="userEmail" style="color: var(--text-main);">...</strong>.
+      </p>
+
+      <div id="adminNotice" style="display: none; margin-top: 1.5rem; padding: 1.25rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3);">
+        <strong style="color: #fcd34d;">Modo Administrador Activo</strong>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; margin-bottom: 0.75rem;">
+          Tienes permisos de administrador para gestionar usuarios, ver métricas globales y consultar auditorías.
+        </p>
+        <a href="/admin" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Ir al Panel de Administración</a>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="color: var(--color-primary); margin-bottom: 0.5rem;">Módulo 1: Calculadora de Costos</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          Cálculo interactivo de tu tarifa horaria con desglose de costos fijos, software, vacaciones e impuestos.
+        </p>
+        <a href="/calculator" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Abrir Calculadora</a>
+      </div>
+
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="color: var(--color-primary); margin-bottom: 0.5rem;">Módulo 2: Suscripciones</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+          Control de servicios recurrentes, fechas de renovación y alertas preventivas sobre periodos de prueba gratuitos.
+        </p>
+        <a href="/subscriptions" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Abrir Organizador</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/js/api/apiClient.js"></script>
+  <script src="/assets/js/utils/routeGuard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth({ requireAuth: true, redirectTo: '/login' });
+      if (!user) return;
+
+      document.getElementById('userName').textContent = user.fullName;
+      document.getElementById('userEmail').textContent = user.email;
+
+      const roleBadge = document.getElementById('userRoleBadge');
+      roleBadge.textContent = user.role;
+      if (user.role === 'admin') {
+        roleBadge.className = 'badge badge-admin';
+        document.getElementById('adminNotice').style.display = 'block';
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+          await authApi.logout();
+        } finally {
+          window.location.href = '/login';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

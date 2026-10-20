@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.4
+    container_name: ffh_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_segura
+      MYSQL_DATABASE: freelancefinancehub
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seeds.sql:/docker-entrypoint-initdb.d/02-seeds.sql:ro
+    networks:
+      - ffh_network
+
+  app:
+    build: .
+    container_name: ffh_app
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      APP_ORIGIN: http://localhost:3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root_password_segura
+      DB_NAME: freelancefinancehub
+      JWT_SECRET: clave_secreta_para_produccion_de_al_menos_64_caracteres_hex_123456
+      JWT_EXPIRES_IN: 8h
+      COOKIE_NAME: ffh_session
+    networks:
+      - ffh_network
+
+networks:
+  ffh_network:
+    driver: bridge
+
+volumes:
+  db_data:

@@ -1,0 +1,46 @@
+{
+  "name": "freelancefinancehub",
+  "version": "1.0.0",
+  "description": "Plataforma de finanzas para freelancers: calculadora de tarifas por hora y organizador de suscripciones con alertas",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "dev": "nodemon backend/src/server.js",
+    "db:test": "node backend/src/config/db.js",
+    "secret:generate": "node backend/scripts/generateSecret.js",
+    "admin:create": "node backend/scripts/createAdmin.js",
+    "test": "jest --runInBand --detectOpenHandles --forceExit"
+  },
+  "keywords": [
+    "freelance",
+    "finance",
+    "hourly-rate",
+    "subscriptions",
+    "nodejs",
+    "express",
+    "mariadb",
+    "mysql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.7.1",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.9.7",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^10.1.7"
+  },
+  "devDependencies": {
+    "jest": "^30.5.2",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.3.1"
+  }
+}

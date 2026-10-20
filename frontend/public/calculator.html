@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Tarifa por Hora - FreelanceFinanceHub</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <style>
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .grid-3col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    .metric-card {
+      background: var(--bg-input);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+    .metric-val {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-top: 0.25rem;
+    }
+    .metric-val.success {
+      color: var(--color-success);
+    }
+    @media (max-width: 850px) {
+      .main-layout {
+        grid-template-columns: 1fr !important;
+      }
+      .grid-2col, .grid-3col {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 1150px;">
+    <nav class="nav">
+      <div style="font-weight: 700; font-size: 1.25rem; color: var(--color-primary);">FreelanceFinanceHub</div>
+      <div class="nav-links">
+        <a href="/dashboard" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Panel Principal</a>
+        <a href="/calculator" class="btn btn-primary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Calculadora</a>
+        <button id="logoutBtn" class="btn btn-secondary" style="width: auto; padding: 0.4rem 0.85rem; font-size: 0.85rem;">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+    <header style="margin-bottom: 2rem;">
+      <span class="badge">Módulo 1</span>
+      <h1 style="margin-top: 0.5rem;">Calculadora de Costos Reales por Hora</h1>
+      <p style="color: var(--text-muted);">
+        Determina tu tarifa mínima de punto de equilibrio y tu tarifa recomendada considerando costos fijos, software, vacaciones, tiempo no facturable e impuestos.
+      </p>
+    </header>
+
+    <div id="calculatorAlert" class="alert"></div>
+
+    <div class="main-layout" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: start;">
+      
+      <!-- COLUMNA 1: FORMULARIO DE PARÁMETROS -->
+      <section class="card" style="margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.25rem;">Parámetros de Cálculo</h2>
+          <button id="newProfileBtn" type="button" class="btn btn-secondary" style="width: auto; padding: 0.35rem 0.75rem; font-size: 0.8rem;">+ Nuevo Escenario</button>
+        </div>
+
+        <form id="calculatorForm">
+          <div class="form-group">
+            <label for="profileName">Nombre del Escenario</label>
+            <input type="text" id="profileName" class="form-input" value="Escenario Base 2026" required>
+          </div>
+
+          <div class="form-group">
+            <label for="targetMonthlyIncome">Ingreso Neto Mensual Deseado ($ USD)</label>
+            <input type="number" id="targetMonthlyIncome" class="form-input" value="2000" min="0" step="50" required>
+          </div>
+
+          <div class="grid-2col">
+            <div class="form-group">
+              <label for="workingDaysPerWeek">Días laborales/semana</label>
+              <input type="number" id="workingDaysPerWeek" class="form-input" value="5" min="1" max="7" required>
+            </div>
+            <div class="form-group">
+              <label for="hoursPerDay">Horas trabajo/día</label>
+              <input type="number" id="hoursPerDay" class="form-input" value="8" min="1" max="24" step="0.5" required>
+            </div>
+          </div>
+
+          <div class="grid-3col">
+            <div class="form-group">
+              <label for="vacationWeeksPerYear">Semanas vacaciones</label>
+              <input type="number" id="vacationWeeksPerYear" class="form-input" value="4" min="0" max="50">
+            </div>
+            <div class="form-group">
+              <label for="holidaysPerYear">Días feriados/año</label>
+              <input type="number" id="holidaysPerYear" class="form-input" value="10" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label for="sickLeaveDaysPerYear">Días enfermedad</label>
+              <input type="number" id="sickLeaveDaysPerYear" class="form-input" value="5" min="0" max="100">
+            </div>
+          </div>
+
+          <div class="grid-3col">
+            <div class="form-group">
+              <label for="billablePercentage">% Facturable</label>
+              <input type="number" id="billablePercentage" class="form-input" value="75" min="1" max="100">
+              <small style="color: var(--text-muted); font-size: 0.75rem;">(Resto: admin, ventas)</small>
+            </div>
+            <div class="form-group">
+              <label for="taxPercentage">% Impuestos</label>
+              <input type="number" id="taxPercentage" class="form-input" value="20" min="0" max="99">
+              <small style="color: var(--text-muted); font-size: 0.75rem;">(Tasa impositiva est.)</small>
+            </div>
+            <div class="form-group">
+              <label for="profitMarginPercentage">% Margen ganancia</label>
+              <input type="number" id="profitMarginPercentage" class="form-input" value="15" min="0" max="300">
+              <small style="color: var(--text-muted); font-size: 0.75rem;">(Colchón de seguridad)</small>
+            </div>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+
+          <!-- GASTOS OPERATIVOS Y SOFTWARE -->
+          <div style="margin-bottom: 1rem;">
+            <h3 style="font-size: 1.05rem; margin-bottom: 0.5rem;">Costos Fijos y Software Operativo</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+              Agrega los costos recurrentes de tu negocio (internet, coworking, herramientas SaaS, hosting).
+            </p>
+
+            <div class="grid-2col" style="gap: 0.5rem; margin-bottom: 0.5rem;">
+              <input type="text" id="expenseName" class="form-input" placeholder="Nombre (ej. Licencia Adobe, Internet)">
+              <input type="number" id="expenseAmount" class="form-input" placeholder="Monto ($)" min="0" step="5">
+            </div>
+
+            <div class="grid-3col" style="gap: 0.5rem; margin-bottom: 0.75rem;">
+              <select id="expensePeriodicity" class="form-input">
+                <option value="monthly">Mensual</option>
+                <option value="annual">Anual</option>
+              </select>
+              <select id="expenseType" class="form-input">
+                <option value="fixed_cost">Costo Fijo</option>
+                <option value="software">Software / SaaS</option>
+              </select>
+              <button type="button" id="addExpenseBtn" class="btn btn-secondary" style="height: 100%;">+ Añadir</button>
+            </div>
+
+            <div id="expensesListContainer" style="margin-top: 1rem;"></div>
+          </div>
+
+          <button type="button" id="saveProfileBtn" class="btn btn-primary" style="margin-top: 1rem;">
+            Guardar Escenario
+          </button>
+        </form>
+      </section>
+
+      <!-- COLUMNA 2: RESULTADOS Y ESCENARIOS GUARDADOS -->
+      <div>
+        <section class="card" style="margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Resultados Calculados (En Vivo)</h2>
+
+          <div class="grid-2col" style="margin-bottom: 1rem;">
+            <div class="metric-card">
+              <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Tarifa Recomendada</span>
+              <div id="resRecRate" class="metric-val success">$0.00</div>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">Con margen de ganancia</small>
+            </div>
+            <div class="metric-card">
+              <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Tarifa Mínima</span>
+              <div id="resMinRate" class="metric-val">$0.00</div>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">Punto de equilibrio</small>
+            </div>
+          </div>
+
+          <div style="background: var(--bg-input); border-radius: var(--radius-md); padding: 1rem; font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: var(--text-muted);">Horas facturables al mes:</span>
+              <strong id="resBillableHoursMonth">0 hrs</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: var(--text-muted);">Horas facturables al año:</span>
+              <strong id="resBillableHoursYear">0 hrs</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: var(--text-muted);">Gastos operativos anuales:</span>
+              <strong id="resAnnualOperating">$0.00</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span style="color: var(--text-muted);">Impuestos anuales estimados:</span>
+              <strong id="resAnnualTaxes">$0.00</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 0.5rem; margin-top: 0.5rem;">
+              <span style="color: var(--text-main); font-weight: 600;">Presupuesto anual requerido:</span>
+              <strong id="resTotalBudget" style="color: var(--color-primary);">$0.00</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- ESCENARIOS GUARDADOS -->
+        <section class="card" style="margin-bottom: 0;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Mis Escenarios Guardados</h2>
+          <div id="savedProfilesContainer">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Cargando escenarios...</p>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/assets/js/api/apiClient.js"></script>
+  <script src="/assets/js/api/calculatorApi.js"></script>
+  <script src="/assets/js/utils/routeGuard.js"></script>
+  <script src="/assets/js/modules/calculatorView.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await checkAuth({ requireAuth: true, redirectTo: '/login' });
+      if (!user) return;
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+          await authApi.logout();
+        } finally {
+          window.location.href = '/login';
+        }
+      });
+
+      setupCalculatorView();
+    });
+  </script>
+</body>
+</html>

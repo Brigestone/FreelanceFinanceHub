@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreelanceFinanceHub - Inicio</title>
+  <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <div style="font-weight: 700; font-size: 1.25rem; color: var(--color-primary);">FreelanceFinanceHub</div>
+      <div class="nav-links">
+        <a href="/login" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;">Iniciar Sesión</a>
+        <a href="/register" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem;">Registrarse</a>
+      </div>
+    </nav>
+
+    <header style="text-align: center; margin: 3rem 0;">
+      <span class="badge">Fase 2: Autenticación & Seguridad Activa</span>
+      <h1 style="font-size: 2.5rem; margin-top: 1rem; color: var(--text-main);">Gestión Financiera para Freelancers</h1>
+      <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 600px; margin: 1rem auto;">
+        Calcula tus tarifas reales por hora y organiza tus suscripciones para evitar cobros no deseados tras pruebas gratuitas.
+      </p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>Estado de la Infraestructura</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+          Conexión activa con MariaDB, seguridad mediante Helmet, JWT en cookies HttpOnly y control de acceso RBAC.
+        </p>
+        <button id="checkHealthBtn" class="btn btn-secondary" style="width: auto;">Comprobar Estado del Servidor y BD</button>
+        <pre id="healthResult" style="margin-top: 1.5rem; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); font-size: 0.85rem; display: none; overflow-x: auto;"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
