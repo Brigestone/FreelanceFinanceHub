@@ -78,6 +78,11 @@ npm run dev
 
 ---
 
+## 🚀 Enlace en Producción (Despliegue Final)
+
+La aplicación se encuentra desplegada, conectada a la base de datos en la nube y completamente funcional en el siguiente enlace:
+- **URL Principal:** [https://freelancefinancehub-production.up.railway.app](https://freelancefinancehub-production.up.railway.app)
+
 ## 🌐 Enlaces de la Aplicación
 
 Con el servidor en ejecución, abre tu navegador en:
