@@ -29,8 +29,8 @@ app.use(
       useDefaults: true,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", 'https://fonts.googleapis.com'],
+        scriptSrc: ["'self'", "'unsafe-inline'"], // <-- Permite scripts en el HTML
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'], // <-- Permite estilos en el HTML
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:'],
         connectSrc: ["'self'"],
